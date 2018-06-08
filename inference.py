@@ -53,13 +53,13 @@ def get_arguments():
     return parser.parse_args()
 
 def save(saver, sess, logdir, step):
-   model_name = 'model.ckpt'
-   checkpoint_path = os.path.join(logdir, model_name)
+    model_name = 'model.ckpt'
+    checkpoint_path = os.path.join(logdir, model_name)
 
-   if not os.path.exists(logdir):
-      os.makedirs(logdir)
-   saver.save(sess, checkpoint_path, global_step=step)
-   print('The checkpoint has been created.')
+    if not os.path.exists(logdir):
+       os.makedirs(logdir)
+    saver.save(sess, checkpoint_path, global_step=step)
+    print('The checkpoint has been created.')
 
 def load(saver, sess, ckpt_path):
     saver.restore(sess, ckpt_path)
@@ -144,8 +144,9 @@ def main():
     # Predictions.
     raw_output_up = tf.image.resize_bilinear(raw_output, size=n_shape, align_corners=True)
     raw_output_up = tf.image.crop_to_bounding_box(raw_output_up, 0, 0, shape[0], shape[1])
+    probs = - tf.nn.log_softmax(raw_output_up, axis=3)
     raw_output_up = tf.argmax(raw_output_up, axis=3)
-    pred = decode_labels(raw_output_up, shape, num_classes)
+    preds = decode_labels(raw_output_up, shape, num_classes)
 
     # Init tf Session
     config = tf.ConfigProto()
@@ -175,8 +176,9 @@ def main():
 
     for i in trange(len(imgs), desc='Inference', leave=True):
         start_time = timeit.default_timer() 
-        preds = sess.run(pred, feed_dict={x: imgs[i]})
+        [preds, probs] = sess.run([preds, probs], feed_dict={x: imgs[i]})
         elapsed = timeit.default_timer() - start_time
+        np.savez_compressed(args.save_dir + filenames[i][:-4], probs[0])
 
         print('inference time: {}'.format(elapsed))
         misc.imsave(args.save_dir + filenames[i], preds[0])
