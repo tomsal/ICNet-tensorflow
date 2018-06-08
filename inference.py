@@ -178,7 +178,7 @@ def main():
         start_time = timeit.default_timer() 
         [preds, probs] = sess.run([preds, probs], feed_dict={x: imgs[i]})
         elapsed = timeit.default_timer() - start_time
-        np.savez_compressed(args.save_dir + filenames[i][:-4], probs[0])
+        np.savez_compressed(args.save_dir + filenames[i], probs[0])
 
         print('inference time: {}'.format(elapsed))
         misc.imsave(args.save_dir + filenames[i], preds[0])
