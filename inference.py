@@ -9,6 +9,7 @@ from tqdm import trange
 import tensorflow as tf
 import numpy as np
 from scipy import misc
+import h5py
 
 from model import ICNet, ICNet_BN
 from tools import decode_labels
@@ -178,7 +179,11 @@ def main():
         start_time = timeit.default_timer() 
         [preds, probs] = sess.run([preds, probs], feed_dict={x: imgs[i]})
         elapsed = timeit.default_timer() - start_time
-        np.savez_compressed(args.save_dir + filenames[i], probs[0])
+        print("Saving probabilities {} to h5.".format(probs.shape))
+        h5_file = h5py.File(args.save_dir + filenames[i] + ".h5", 'w')
+        h5_file.create_dataset('nlogprobs', data=probs[0], compression='gzip')
+        h5_file.close()
+        #np.savez_compressed(args.save_dir + filenames[i], probs[0])
 
         print('inference time: {}'.format(elapsed))
         misc.imsave(args.save_dir + filenames[i], preds[0])
