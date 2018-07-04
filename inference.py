@@ -177,16 +177,16 @@ def main():
 
     for i in trange(len(imgs), desc='Inference', leave=True):
         start_time = timeit.default_timer() 
-        [preds, probs] = sess.run([preds, probs], feed_dict={x: imgs[i]})
+        [preds_out, probs_out] = sess.run([preds, probs], feed_dict={x: imgs[i]})
         elapsed = timeit.default_timer() - start_time
-        print("Saving probabilities {} to h5.".format(probs.shape))
+        #print("Saving probabilities {} to h5.".format(probs.shape))
         h5_file = h5py.File(args.save_dir + filenames[i] + ".h5", 'w')
-        h5_file.create_dataset('nlogprobs', data=probs[0], compression='gzip')
+        h5_file.create_dataset('nlogprobs', data=probs_out[0], compression='gzip')
         h5_file.close()
         #np.savez_compressed(args.save_dir + filenames[i], probs[0])
 
-        print('inference time: {}'.format(elapsed))
-        misc.imsave(args.save_dir + filenames[i], preds[0])
+        #print('inference time: {}'.format(elapsed))
+        misc.imsave(args.save_dir + filenames[i], preds_out[0])
 
 if __name__ == '__main__':
     main()
