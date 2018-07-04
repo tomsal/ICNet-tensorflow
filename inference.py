@@ -180,7 +180,9 @@ def main():
         [preds_out, probs_out] = sess.run([preds, probs], feed_dict={x: imgs[i]})
         elapsed = timeit.default_timer() - start_time
         #print("Saving probabilities {} to h5.".format(probs.shape))
-        h5_file = h5py.File(args.save_dir + filenames[i] + ".h5", 'w')
+        probs_filename = filenames[i].split('_')[:3]
+        probs_filename = '_'.join(probs_filename) + '_probs.h5'
+        h5_file = h5py.File(args.save_dir + probs_filename, 'w')
         h5_file.create_dataset('nlogprobs', data=probs_out[0], compression='gzip')
         h5_file.close()
         #np.savez_compressed(args.save_dir + filenames[i], probs[0])
