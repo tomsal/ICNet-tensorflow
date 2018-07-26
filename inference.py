@@ -12,7 +12,7 @@ from scipy import misc
 import h5py
 
 from model import ICNet, ICNet_BN
-from tools import decode_labels
+from tools import decode_labels, decode_cityscapes_labels
 
 IMG_MEAN = np.array((103.939, 116.779, 123.68), dtype=np.float32)
 # define setting & model configuration
@@ -40,6 +40,8 @@ def get_arguments():
                         help="Model to use.",
                         choices=['train', 'trainval', 'train_bn', 'trainval_bn', 'others'],
                         required=True)
+    parser.add_argument("--no-h5", action="store_true",
+                        help="Do not save negative log probabilites h5 files.")
     parser.add_argument("--save-dir", type=str, default=SAVE_DIR,
                         help="Path to save output.")
     parser.add_argument("--flipped-eval", action="store_true",
@@ -148,6 +150,7 @@ def main():
     probs = - tf.nn.log_softmax(raw_output_up, axis=3)
     raw_output_up = tf.argmax(raw_output_up, axis=3)
     preds = decode_labels(raw_output_up, shape, num_classes)
+    labels = decode_cityscapes_labels(raw_output_up, shape, num_classes)
 
     # Init tf Session
     config = tf.ConfigProto()
@@ -176,19 +179,27 @@ def main():
         os.makedirs(args.save_dir)
 
     for i in trange(len(imgs), desc='Inference', leave=True):
-        start_time = timeit.default_timer() 
-        [preds_out, probs_out] = sess.run([preds, probs], feed_dict={x: imgs[i]})
-        elapsed = timeit.default_timer() - start_time
+        #start_time = timeit.default_timer() 
+        #elapsed = timeit.default_timer() - start_time
         #print("Saving probabilities {} to h5.".format(probs.shape))
-        probs_filename = filenames[i].split('_')[:3]
-        probs_filename = '_'.join(probs_filename) + '_probs.h5'
-        h5_file = h5py.File(args.save_dir + probs_filename, 'w')
-        h5_file.create_dataset('nlogprobs', data=probs_out[0], compression='gzip')
-        h5_file.close()
-        #np.savez_compressed(args.save_dir + filenames[i], probs[0])
-
+        # save negative log probabilites
+        if not args.no_h5:
+            [preds_out, probs_out] = sess.run([preds, probs], feed_dict={x: imgs[i]})
+            probs_filename = filenames[i].split('_')[:3]
+            probs_filename = '_'.join(probs_filename) + '_probs.h5'
+            h5_file = h5py.File(args.save_dir + probs_filename, 'w')
+            h5_file.create_dataset('nlogprobs', data=probs_out[0], compression='gzip')
+            h5_file.close()
+        # save evaluation image
+        else:
+            [preds_out, labels_out] = sess.run([preds, labels], feed_dict={x: imgs[i]})
+            labelImg_filename = filenames[i].split('_')[:3]
+            labelImg_filename = '_'.join(labelImg_filename) + '_labelImg.png'
+            misc.imsave(args.save_dir + labelImg_filename, labels_out[0])
+        # save nice looking image
         #print('inference time: {}'.format(elapsed))
         misc.imsave(args.save_dir + filenames[i], preds_out[0])
+
 
 if __name__ == '__main__':
     main()

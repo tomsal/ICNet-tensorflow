@@ -26,7 +26,7 @@ cityscapes_param = {'name': 'cityscapes',
                     'num_classes': 19,
                     'ignore_label': 255,
                     'num_steps': 500,
-                    'data_dir': '/data/cityscapes_dataset/cityscape', 
+                    'data_dir': '/data/Cityscapes',
                     'data_list': './list/cityscapes_val_list.txt'}
 
 model_paths = {'train': './model/icnet_cityscapes_train_30k.npy', 

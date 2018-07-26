@@ -3,6 +3,9 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 
+import cityscapes_labels
+
+
 label_colours = [[128, 64, 128], [244, 35, 231], [69, 69, 69]
                 # 0 = road, 1 = sidewalk, 2 = building
                 ,[102, 102, 156], [190, 153, 153], [153, 153, 153]
@@ -26,6 +29,19 @@ def read_labelcolours(matfn):
     color_list = [tuple(color_table[i]) for i in range(shape[0])]
 
     return color_list
+
+def decode_cityscapes_labels(mask, img_shape, num_classes):
+    color_table = [[cityscapes_labels.trainId2label[trainId].id]\
+                    for trainId in range(num_classes)]
+
+    color_mat = tf.constant(color_table, dtype=tf.int32)
+    onehot_output = tf.one_hot(mask, depth=num_classes, dtype=tf.int32)
+    onehot_output = tf.reshape(onehot_output, (-1, num_classes))
+    pred = tf.matmul(onehot_output, color_mat)
+    pred = tf.reshape(pred, (1, img_shape[0], img_shape[1]))
+    pred = tf.cast(pred, tf.uint8)
+    
+    return pred
 
 def decode_labels(mask, img_shape, num_classes):
     if num_classes == 150:
