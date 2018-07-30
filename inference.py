@@ -188,7 +188,12 @@ def main():
             probs_filename = filenames[i].split('_')[:3]
             probs_filename = '_'.join(probs_filename) + '_probs.h5'
             h5_file = h5py.File(args.save_dir + probs_filename, 'w')
-            h5_file.create_dataset('nlogprobs', data=probs_out[0], compression='gzip')
+            h5_file.create_dataset('nlogprobs', data=probs_out[0])
+            # Sloppy timed for 21 cityscapes images:
+            # no compression: 19 seconds -> 3.2 GB (3269156 b)
+            #, compression='lzf'): 36 seconds -> 3.2 GB (3330820 b)
+            #, compression='gzip'): 2 minutes 28 seconds -> 2.7 GB (2750440 b)
+            # -> either use gzip if you have time or no compression at all!
             h5_file.close()
         # save evaluation image
         else:
