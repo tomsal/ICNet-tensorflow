@@ -185,7 +185,7 @@ def main():
         # save negative log probabilites
         if not args.no_h5:
             [preds_out, probs_out] = sess.run([preds, probs], feed_dict={x: imgs[i]})
-            probs_filename = filenames[i].split('_')[:3]
+            probs_filename = filenames[i].split('_')[:-1]
             probs_filename = '_'.join(probs_filename) + '_probs.h5'
             h5_file = h5py.File(args.save_dir + probs_filename, 'w')
             h5_file.create_dataset('nlogprobs', data=probs_out[0])
@@ -198,7 +198,7 @@ def main():
         # save evaluation image
         else:
             [preds_out, labels_out] = sess.run([preds, labels], feed_dict={x: imgs[i]})
-            labelImg_filename = filenames[i].split('_')[:3]
+            labelImg_filename = filenames[i].split('_')[:-1]
             labelImg_filename = '_'.join(labelImg_filename) + '_labelImg.png'
             misc.imsave(args.save_dir + labelImg_filename, labels_out[0])
         # save nice looking image
