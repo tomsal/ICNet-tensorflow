@@ -3,7 +3,6 @@
 echo -e "\n--- Running semantic segmentation."
 #cd ICNet-tensorflow
 cd $(dirname $0)
-pwd
 source activate tf
 echo "Executing:"\
   "python inference.py --img-path=../${1} --save-dir=../${2}"\
